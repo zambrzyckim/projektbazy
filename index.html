@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>KIA Transport Hub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: url('https://www.hdcarwallpapers.com/walls/kia_telluride_x_pro_2027-HD.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #2b1d16;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(35, 22, 16, 0.55);
+            z-index: 0;
+        }
+        .form-container {
+            position: relative;
+            z-index: 1;
+            background: rgba(245, 236, 226, 0.96);
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 18px 45px rgba(0,0,0,0.35);
+        }
+        h1, h2 { margin: 0 0 18px 0; text-align: center; color: #3b2418; }
+        .section-title { color: #7a4b2a; font-weight: 800; }
+        .form-section { margin-bottom: 24px; }
+        .role-switch { display: flex; gap: 10px; margin-top: 10px; }
+        .role-button {
+            flex: 1;
+            background: #e8d7c8;
+            border: 1px solid #c9b2a0;
+            color: #3b2418;
+            cursor: pointer;
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-weight: 700;
+            transition: 0.2s;
+        }
+        .role-button.active { background: #7a4b2a; color: #fff; }
+        .role-form { display: none; }
+        .role-form.active { display: block; }
+        input, select, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #c9b2a0;
+            background: #fff7f0;
+            color: #2b1d16;
+            outline: none;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        button {
+            background: linear-gradient(135deg, #7a4b2a, #4a2c1d);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        button:hover { filter: brightness(1.1); }
+        #wynik { font-weight: bold; text-align: center; margin-top: 10px; }
+        #secretDot {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(122, 75, 42, 0.18);
+            border: 1px solid rgba(122, 75, 42, 0.35);
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        #secretDot:hover {
+            transform: scale(1.2);
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+<div id="secretDot" title="Sekretny panel administratora"></div>
+    <h1>KIA Transport Hub</h1>
+
+    <div class="form-section">
+        <h2 class="section-title">Logowanie</h2>
+        <div class="role-switch">
+            <button type="button" class="role-button active" data-role="distributor">Dystrybutor</button>
+            <button type="button" class="role-button" data-role="dealer">Dealer</button>
+            <button type="button" id="adminRoleButton" class="role-button" data-role="admin" style="display:none;">Admin</button>
+        </div>
+    </div>
+
+    <div id="distributorForm" class="form-section role-form active">
+        <h2 class="section-title">Logowanie dystrybutora</h2>
+        <input type="text" id="distributorLogin" placeholder="Login" value="admin">
+        <input type="password" id="distributorPassword" placeholder="Hasło" value="admin123">
+    </div>
+
+    <div id="adminForm" class="form-section role-form">
+        <h2 class="section-title">Logowanie administratora</h2>
+        <input type="text" id="adminLogin" placeholder="Login admina" value="admin">
+        <input type="password" id="adminPassword" placeholder="Hasło" value="admin123">
+        <p style="margin: 10px 0 0; font-size: 0.9rem; color: #7a4b2a;">Sekretny panel: kliknij krąg</p>
+    </div>
+
+    <div id="dealerForm" class="form-section role-form">
+        <h2 class="section-title">Logowanie dealera</h2>
+        <select id="dealerId">
+            <option value="">Wybierz swój punkt / salon</option>
+        </select>
+        <input type="text" id="dealerLogin" placeholder="Login dealera" value="dealer_krakow">
+        <input type="password" id="dealerPassword" placeholder="Hasło" value="wawa123">
+    </div>
+
+    <button id="loginButton">Zaloguj przez bazę Oracle</button>
+    <p id="wynik"></p>
+</div>
+
+<script>
+    fetch('http://localhost:3000/api/dealerzy')
+        .then(r => r.json())
+        .then(dealers => {
+            const sel = document.getElementById('dealerId');
+            dealers.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.NAZWA;
+                opt.textContent = d.NAZWA + ' (' + d.MIASTO + ')';
+                sel.appendChild(opt);
+            });
+        }).catch(() => {
+            // fallback – hardkodowane opcje jeśli server offline
+            ['KIA Warszawa Centrum','KIA Kraków Nowa Huta','KIA Gdańsk Port'].forEach(n => {
+                const opt = document.createElement('option');
+                opt.value = n; opt.textContent = n;
+                document.getElementById('dealerId').appendChild(opt);
+            });
+        });
+
+    document.querySelectorAll('.role-button').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.role-button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.role-form').forEach(f => f.classList.remove('active'));
+            button.classList.add('active');
+            const form = document.getElementById(button.dataset.role + 'Form');
+            if (form) form.classList.add('active');
+            document.getElementById('wynik').innerText = '';
+        });
+    });
+
+    document.getElementById('secretDot').addEventListener('click', () => {
+        const adminButton = document.getElementById('adminRoleButton');
+        const adminForm = document.getElementById('adminForm');
+        const distributorForm = document.getElementById('distributorForm');
+        const dealerForm = document.getElementById('dealerForm');
+        adminButton.style.display = 'inline-flex';
+        document.querySelectorAll('.role-button').forEach(b => b.classList.remove('active'));
+        adminButton.classList.add('active');
+        adminForm.classList.add('active');
+        distributorForm.classList.remove('active');
+        dealerForm.classList.remove('active');
+        document.getElementById('wynik').innerText = '';
+    });
+
+    document.getElementById('loginButton').addEventListener('click', async () => {
+        const activeRole = document.querySelector('.role-button.active').dataset.role;
+        const login = activeRole === 'dealer'
+            ? document.getElementById('dealerLogin').value.trim()
+            : activeRole === 'admin'
+                ? document.getElementById('adminLogin').value.trim()
+                : document.getElementById('distributorLogin').value.trim();
+        const password = activeRole === 'dealer'
+            ? document.getElementById('dealerPassword').value.trim()
+            : activeRole === 'admin'
+                ? document.getElementById('adminPassword').value.trim()
+                : document.getElementById('distributorPassword').value.trim();
+        const dealerId = document.getElementById('dealerId').value;
+        const wynikPole = document.getElementById('wynik');
+
+        if (!login || !password || (activeRole === 'dealer' && !dealerId)) {
+            wynikPole.style.color = '#7a4b2a';
+            wynikPole.innerText = 'Błąd: Wypełnij wszystkie pola.';
+            return;
+        }
+
+        wynikPole.style.color = '#5a3a28';
+        wynikPole.innerText = 'Weryfikacja w bazie Oracle...';
+
+        try {
+            const response = await fetch('http://localhost:3000/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ login, password })
+            });
+            const data = await response.json();
+
+            if (data.status === 'ZALOGOWANO PRAWIDLOWO') {
+                const rawRole = (data.rola || '').toString().trim().toLowerCase();
+                const role = activeRole === 'admin'
+                    ? 'admin'
+                    : rawRole.includes('dystrybutor') ? 'distributor'
+                    : rawRole.includes('dealer') ? 'dealer'
+                    : rawRole.includes('admin') || rawRole.includes('administrator') ? 'admin'
+                    : rawRole;
+                localStorage.setItem('kiaRole', role);
+                localStorage.setItem('kiaLogin', login);
+                // Jeśli baza zwróciła dealer_nazwa z JOIN, użyj jej; w przeciwnym razie select
+                localStorage.setItem('kiaDealer', activeRole === 'dealer'
+                    ? (data.dealer || dealerId)
+                    : (role === 'admin' ? 'Administrator' : 'Dystrybutor centralny'));
+                wynikPole.style.color = '#3b2418';
+                wynikPole.innerText = '✓ Autoryzacja pomyślna!';
+                setTimeout(() => { window.location.href = 'catalog.html'; }, 600);
+            } else {
+                wynikPole.style.color = '#7a1f1f';
+                wynikPole.innerText = '❌ Nieprawidłowy login lub hasło.';
+            }
+        } catch (err) {
+            wynikPole.style.color = '#7a1f1f';
+            wynikPole.innerText = '❌ Błąd połączenia z serwerem.';
+        }
+    });
+</script>
+</body>
+</html>

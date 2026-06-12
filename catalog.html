@@ -1,0 +1,599 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Magazyn KIA</title>
+    <style>
+* { box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f4f5f7; margin: 0; padding: 20px; color: #1a1a1a; }
+.container { width: 100%; max-width: none; margin: 0; }
+.panel { width: 100%; background: #fff; padding: 22px; border-bottom: 1px solid #e5e7eb; }
+h1, h2 { color: #111827; }
+.info-bar { background: #fff; border-left: 4px solid #9ca3af; padding: 12px 16px; margin-bottom: 15px; font-size: 0.9rem; border-bottom: 1px solid #e5e7eb; }
+.tabs { display: flex; gap: 10px; background: #fff; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
+.tab-btn { padding: 10px 18px; border: 1px solid #d1d5db; background: #fff; color: #111827; cursor: pointer; font-weight: 600; }
+.tab-btn.active { background: #111827; color: #fff; border-color: #111827; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.card { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap; gap: 15px; }
+.car-info { display: flex; align-items: center; gap: 15px; }
+.car-info img { width: 120px; height: 75px; object-fit: cover; border-radius: 6px; }
+.car-info h3 { margin: 0; font-size: 1rem; }
+.car-info p { margin: 0; font-size: 0.9rem; color: #6b7280; }
+.color-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid #ccc; vertical-align: middle; margin-right: 4px; }
+.actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.actions input[type=number] { width: 70px; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; text-align: center; }
+.btn { padding: 9px 14px; border-radius: 6px; border: 1px solid #d1d5db; background: #fff; color: #111827; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.btn:hover { background: #f3f4f6; }
+#addPanel input, #addPanel select { padding: 9px 12px; border: 1px solid #d1d5db; border-radius: 6px; margin: 5px 5px 5px 0; width: 180px; display: inline-block; }
+#adminPanel { border: 1px solid #f3d6c2; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border-radius: 15px; padding: 22px; }
+#adminPanel h2 { margin-top: 0; font-size: 1.25rem; }
+#adminPanel .admin-hint { margin: 10px 0 18px; color: #475569; font-size: 0.95rem; line-height: 1.5; }
+#adminPanel .admin-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+#adminPanel .admin-form-row.single { grid-template-columns: 1fr; }
+#adminPanel input, #adminPanel select { width: 100%; padding: 12px 14px; border: 1px solid #d1d5db; border-radius: 10px; background: #fff; color: #111827; }
+#adminPanel button { background: linear-gradient(135deg, #2563eb, #9333ea); color: #fff; border: none; box-shadow: 0 10px 20px rgba(37,99,235,0.15); }
+#adminPanel button:hover { filter: brightness(1.05); }
+#adminMessage { margin-top: 14px; font-size: 0.95rem; }
+#adminPanel .field-label { display: block; margin-bottom: 6px; font-weight: 700; color: #1f2937; }
+#adminPanel .section-block { background: #f8fafc; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 14px; }
+#adminUsersContainer table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+#adminUsersContainer th, #adminUsersContainer td { padding: 12px 10px; border: 1px solid #e5e7eb; text-align: left; }
+#adminUsersContainer th { background: #eef2ff; }
+#adminUsersContainer input { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; }
+#adminUsersContainer .user-action { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+#adminUsersContainer .action-btn { padding: 7px 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; }
+#adminUsersContainer .delete-btn { background: #fee2e2; color: #991b1b; }
+#adminUsersContainer .save-btn { background: #dbeafe; color: #1e40af; }
+.order-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.order-table th { background: #f3f4f6; padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+.order-table td { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+.status-badge { padding: 4px 10px; border-radius: 999px; background: #f3f4f6; font-size: 0.8rem; }
+.status-NOWE { background: #dbeafe; color: #1e40af; }
+.status-W_REALIZACJI { background: #fef3c7; color: #92400e; }
+.status-DOSTARCZONE { background: #d1fae5; color: #065f46; }
+.status-ANULOWANE { background: #fee2e2; color: #991b1b; }
+.stat-box { display: inline-block; background: #f3f4f6; border-radius: 8px; padding: 12px 20px; margin-bottom: 16px; }
+.stat-box strong { font-size: 1.3rem; display: block; }
+.logout { color: #6b7280; }
+.logout a { color: #111827; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h1>KIA Transport Hub</h1>
+        <span class="logout">Użytkownik: <b id="loginLabel"></b> | <a href="index.html">Wyloguj</a></span>
+    </div>
+
+    <div class="info-bar" id="infoBar"></div>
+    <div id="roleInfo" style="margin:8px 0 12px;color:#475569;font-size:0.95rem;"></div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('magazyn', this)">Magazyn</button>
+        <button class="tab-btn" onclick="switchTab('zamowienia', this)">Zamówienia</button>
+    </div>
+
+    <!-- MAGAZYN -->
+    <div id="tab-magazyn" class="tab-content active">
+        <div class="panel">
+            <div id="addPanel" class="panel" style="background:#f0f4ff;margin-bottom:20px;display:none;">
+                <h2>Dodaj nowy model</h2>
+                <select id="n_model"><option value="">-- Model z bazy --</option></select>
+                <input id="n_custom" placeholder="Lub wpisz własną nazwę">
+                <select id="n_kolor"><option value="">-- Kolor (opcja) --</option></select>
+                <input id="p" placeholder="Cena (zł)">
+                <input id="s" placeholder="Sztuk">
+                <button class="btn" onclick="dodaj()">Dodaj do magazynu</button>
+            </div>
+
+            <div id="adminPanel" class="panel" style="background:#fff7ed;margin-bottom:20px;display:none;">
+                <h2>Panel administratora</h2>
+                <p class="admin-hint">Utwórz nowe konto dla dystrybutora lub dealera. Konto dealer musi być przypisane do salonu.</p>
+                <div class="section-block">
+                    <div class="admin-form-row single">
+                        <label class="field-label" for="newUserLogin">Login użytkownika</label>
+                        <input id="newUserLogin" placeholder="Login nowego użytkownika">
+                    </div>
+                    <div class="admin-form-row single">
+                        <label class="field-label" for="newUserPassword">Hasło</label>
+                        <input id="newUserPassword" type="password" placeholder="Hasło nowego użytkownika">
+                    </div>
+                    <div class="admin-form-row">
+                        <div>
+                            <label class="field-label" for="newUserRole">Rola</label>
+                            <select id="newUserRole"><option value="">-- Wybierz rolę --</option></select>
+                        </div>
+                        <div>
+                            <label class="field-label" for="newUserDealer">Dealer</label>
+                            <select id="newUserDealer" style="display:none;"><option value="">-- Wybierz dealera --</option></select>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="createUser()">Utwórz konto</button>
+                <p id="adminMessage" style="margin-top:10px;color:#1f2937;"></p>
+            </div>
+            <div id="adminUserListSection" style="display:none; margin-top: 28px;">
+                <h3>Zarządzanie użytkownikami</h3>
+                <div id="adminUsersContainer"></div>
+            </div>
+
+            <h2>Stan magazynu centralnego
+                <span id="statStok" class="stat-box" style="font-size:0.85rem;margin-left:16px;"></span>
+            </h2>
+            <div id="grid"></div>
+            <div id="adminOrdersSection" style="display:none; margin-top: 30px;">
+                <h2>Zamówienia</h2>
+                <div id="adminOrdersContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ZAMÓWIENIA -->
+    <div id="tab-zamowienia" class="tab-content">
+        <div class="panel">
+            <h2><span id="zamowieniaTitle"></span></h2>
+            <div id="zamowieniaContainer"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const rawRole = (localStorage.getItem('kiaRole') || '').toString().trim();
+const login = localStorage.getItem('kiaLogin');
+const dealer = localStorage.getItem('kiaDealer');
+const normalizedRole = rawRole.toLowerCase();
+const isAdmin = normalizedRole === 'admin' || normalizedRole === 'administrator' || normalizedRole.includes('admin');
+const isDistributor = normalizedRole === 'distributor' || normalizedRole === 'dystrybutor';
+const rola = isAdmin || isDistributor ? 'distributor' : 'dealer';
+
+document.getElementById('loginLabel').textContent = login + (dealer ? ` (${dealer})` : '');
+document.getElementById('roleInfo').textContent = `Wykryta rola: ${normalizedRole || 'brak'}`;
+document.getElementById('infoBar').textContent = isAdmin
+    ? '🔒 Administrator – zarządzasz kontami użytkowników. Nie widzisz stanu magazynu.'
+    : isDistributor
+        ? '👔 Dystrybutor'
+        : `🏪 Dealer – punkt: ${dealer}.`;
+
+if (isDistributor) {
+    document.getElementById('addPanel').style.display = 'block';
+    document.getElementById('zamowieniaTitle').textContent = 'Wszystkie zamówienia dealerów';
+    loadModele();
+    loadKolory();
+    loadStatStok();
+} else if (isAdmin) {
+    document.querySelector('.tabs').style.display = 'block';
+    document.querySelectorAll('.tab-btn')[1].style.display = 'none';
+    document.getElementById('zamowieniaTitle').textContent = 'Panel administratora';
+    document.getElementById('statStok').style.display = 'inline-block';
+    document.getElementById('addPanel').style.display = 'none';
+    document.getElementById('grid').style.display = 'block';
+    document.getElementById('zamowieniaContainer').style.display = 'none';
+    document.getElementById('tab-zamowienia').style.display = 'none';
+    document.getElementById('tab-magazyn').style.padding = '';
+    document.getElementById('adminOrdersSection').style.display = 'block';
+    loadStatStok();
+    loadZamowienia('adminOrdersContainer');
+} else {
+    document.getElementById('zamowieniaTitle').textContent = 'Moje zamówienia';
+}
+
+if (isAdmin) {
+    document.getElementById('adminPanel').style.display = 'block';
+    document.getElementById('adminUserListSection').style.display = 'block';
+    loadRoles();
+    loadDealersForAdmin();
+    loadUsers();
+}
+
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'zamowienia') loadZamowienia();
+}
+
+async function loadModele() {
+    const res = await fetch('http://localhost:3000/api/modele');
+    const modele = await res.json();
+    const sel = document.getElementById('n_model');
+    modele.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.NAZWA;
+        opt.textContent = m.NAZWA + (m.SEGMENT ? ` (${m.SEGMENT})` : '');
+        sel.appendChild(opt);
+    });
+}
+
+async function loadKolory() {
+    const res = await fetch('http://localhost:3000/api/kolory');
+    const kolory = await res.json();
+    const sel = document.getElementById('n_kolor');
+    kolory.forEach(k => {
+        const opt = document.createElement('option');
+        opt.value = k.ID;
+        opt.textContent = k.NAZWA;
+        sel.appendChild(opt);
+    });
+}
+
+async function loadRoles() {
+    try {
+        const res = await fetch('http://localhost:3000/api/roles');
+        const roles = await res.json();
+        const sel = document.getElementById('newUserRole');
+        sel.innerHTML = '<option value="">-- Wybierz rolę --</option>';
+        roles.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r.NAZWA.toString().toLowerCase();
+            opt.textContent = r.NAZWA;
+            sel.appendChild(opt);
+        });
+        sel.addEventListener('change', () => {
+            const dealerSelect = document.getElementById('newUserDealer');
+            if (sel.value === 'dealer') {
+                dealerSelect.style.display = 'inline-block';
+            } else {
+                dealerSelect.style.display = 'none';
+            }
+        });
+    } catch (e) {}
+}
+
+async function loadDealersForAdmin() {
+    try {
+        const res = await fetch('http://localhost:3000/api/dealerzy');
+        const dealers = await res.json();
+        const sel = document.getElementById('newUserDealer');
+        sel.innerHTML = '<option value="">-- Wybierz dealera --</option>';
+        dealers.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.ID;
+            opt.textContent = d.NAZWA + ' (' + d.MIASTO + ')';
+            sel.appendChild(opt);
+        });
+    } catch (e) {}
+}
+
+async function createUser() {
+    const login = document.getElementById('newUserLogin').value.trim();
+    const password = document.getElementById('newUserPassword').value.trim();
+    const role = document.getElementById('newUserRole').value;
+    const dealerId = document.getElementById('newUserDealer').value || null;
+    const message = document.getElementById('adminMessage');
+
+    if (!login || !password || !role) {
+        message.style.color = '#b91c1c';
+        message.textContent = 'Wypełnij login, hasło i wybierz rolę.';
+        return;
+    }
+    if (role === 'dealer' && !dealerId) {
+        message.style.color = '#b91c1c';
+        message.textContent = 'Wybierz salon dla konta dealera.';
+        return;
+    }
+
+    const res = await fetch('http://localhost:3000/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ login, password, role, dealer_id: dealerId })
+    });
+    const data = await res.json();
+    if (res.ok) {
+        message.style.color = '#0f766e';
+        message.textContent = 'Konto zostało utworzone.';
+        document.getElementById('newUserLogin').value = '';
+        document.getElementById('newUserPassword').value = '';
+        document.getElementById('newUserRole').selectedIndex = 0;
+        document.getElementById('newUserDealer').selectedIndex = 0;
+        document.getElementById('newUserDealer').style.display = 'none';
+    } else {
+        message.style.color = '#b91c1c';
+        message.textContent = data.error || 'Błąd tworzenia konta.';
+    }
+}
+
+async function loadStatStok() {
+    try {
+        const res = await fetch('http://localhost:3000/api/stats/wartosc-stoku');
+        const data = await res.json();
+        document.getElementById('statStok').innerHTML =
+            `Wartość stoku: <strong>${Number(data.wartosc).toLocaleString('pl-PL')} zł</strong>`;
+    } catch(e) {}
+}
+
+async function load() {
+    const res = await fetch('http://localhost:3000/api/samochody');
+    const auta = await res.json();
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+
+    if (auta.length === 0) {
+        grid.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px">Brak samochodów w magazynie.</p>';
+        return;
+    }
+
+    auta.forEach(a => {
+        const img = (a.FOTO && a.FOTO.startsWith('http')) ? a.FOTO : 'https://placehold.co/110x65?text=Brak';
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const kolorDot = a.KOD_HEX
+            ? `<span class="color-dot" style="background:${a.KOD_HEX}" title="${a.KOLOR_NAZWA}"></span>${a.KOLOR_NAZWA}`
+            : '';
+
+        let akcje = '';
+        if (rola === 'distributor') {
+            akcje = `<div class="actions">
+                <input type="number" id="val_${a.ID}" value="1" min="1">
+                <button class="btn" onclick="zmienSztuki(${a.ID}, 1)">+ Dodaj</button>
+                <button class="btn" onclick="zmienSztuki(${a.ID}, -1)">− Usuń</button>
+                <button class="btn" onclick="usunAuto(${a.ID})" title="Usuń">🗑</button>
+            </div>`;
+        } else {
+            akcje = `<div class="actions">
+                <input type="number" id="val_${a.ID}" value="1" min="1" max="${a.SZTUK}">
+                <button class="btn" onclick="zamow(${a.ID}, '${a.NAZWA}')" ${a.SZTUK === 0 ? 'disabled style="opacity:0.4"' : ''}>
+                    ${a.SZTUK === 0 ? 'Brak w stoku' : '🛒 Zamów'}
+                </button>
+            </div>`;
+        }
+
+        card.innerHTML = `
+            <div class="car-info">
+                <img src="${img}" alt="${a.NAZWA}" onerror="this.src='https://placehold.co/110x65?text=Brak'">
+                <div>
+                    <h3>${a.NAZWA}</h3>
+                    <p>Cena: <b>${a.CENA ? Number(a.CENA).toLocaleString('pl-PL') + ' zł' : '—'}</b></p>
+                    <p>Dostępne: <b>${a.SZTUK} szt.</b></p>
+                    ${a.MODEL_NAZWA ? `<p>Model: ${a.MODEL_NAZWA} ${a.SEGMENT ? '· ' + a.SEGMENT : ''}</p>` : ''}
+                    ${kolorDot ? `<p>${kolorDot}</p>` : ''}
+                </div>
+            </div>
+            ${akcje}`;
+        grid.appendChild(card);
+    });
+}
+
+async function dodaj() {
+    const modelSel = document.getElementById('n_model').value.trim();
+    const customName = document.getElementById('n_custom').value.trim();
+    const name = customName || modelSel;
+    const kolor_id = document.getElementById('n_kolor').value || null;
+    const price = document.getElementById('p').value.trim();
+    const stock = document.getElementById('s').value.trim();
+    if (!name || !stock) { alert('Podaj przynajmniej nazwę i liczbę sztuk.'); return; }
+
+    const res = await fetch('http://localhost:3000/api/samochody', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, price, stock, foto: null, kolor_id })
+    });
+    if (res.ok) {
+        ['n_model','n_custom','p','s','n_kolor'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el.tagName === 'SELECT') el.selectedIndex = 0;
+            else el.value = '';
+        });
+        load();
+        loadStatStok();
+    } else {
+        alert('Błąd podczas dodawania.');
+    }
+}
+
+async function zmienSztuki(id, kierunek) {
+    const ile = parseInt(document.getElementById('val_' + id).value) || 1;
+    const res = await fetch(`http://localhost:3000/api/samochody/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zmiana: kierunek * ile })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Błąd operacji.'); return; }
+    load();
+    loadStatStok();
+}
+
+async function usunAuto(id) {
+    if (!confirm('Usunąć ten model z bazy?')) return;
+    await fetch(`http://localhost:3000/api/samochody/${id}`, { method: 'DELETE' });
+    load();
+    loadStatStok();
+}
+
+async function zamow(samochodId, nazwa) {
+    const ile = parseInt(document.getElementById('val_' + samochodId).value) || 1;
+    if (!confirm(`Zamówić ${ile} szt. "${nazwa}" dla punktu ${dealer}?`)) return;
+
+    const res = await fetch('http://localhost:3000/api/zamowienia', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ samochod_id: samochodId, ilosc: ile, dealer })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Błąd zamówienia.'); return; }
+    alert(`✅ Zamówiono ${ile} szt. "${nazwa}" dla ${dealer}.`);
+    load();
+}
+
+async function loadZamowienia(targetId = 'zamowieniaContainer') {
+    const container = document.getElementById(targetId);
+    container.innerHTML = '<p style="color:#9ca3af;text-align:center">Ładowanie...</p>';
+
+    const url = rola === 'distributor'
+        ? 'http://localhost:3000/api/zamowienia'
+        : `http://localhost:3000/api/zamowienia?dealer=${encodeURIComponent(dealer)}`;
+
+    const res = await fetch(url);
+    const zamowienia = await res.json();
+
+    if (!zamowienia.length) {
+        container.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px">Brak zamówień.</p>';
+        return;
+    }
+
+    // Pobierz statusy dla selecta (tylko dystrybutor)
+    let statusy = [];
+    if (rola === 'distributor') {
+        const sr = await fetch('http://localhost:3000/api/statusy');
+        statusy = await sr.json();
+    }
+
+    let html = `<table class="order-table"><thead><tr>
+        <th>#</th>
+        ${rola === 'distributor' ? '<th>Dealer</th>' : ''}
+        <th>Model</th><th>Ilość</th><th>Data</th><th>Status</th>
+        ${rola === 'distributor' ? '<th>Akcja</th>' : isAdmin ? '<th>Akcja</th>' : ''}
+    </tr></thead><tbody>`;
+
+    zamowienia.forEach(z => {
+        const dataStr = z.DATA_ZAM ? new Date(z.DATA_ZAM).toLocaleString('pl-PL') : '—';
+        const statusKlasa = 'status-' + (z.STATUS || '').replace(/ /g,'_');
+        let statusCell = `<span class="status-badge ${statusKlasa}">${z.STATUS || '—'}</span>`;
+
+        let akcjaCell = '';
+        if (rola === 'distributor') {
+            const opts = statusy.map(s =>
+                `<option value="${s.NAZWA}" ${s.NAZWA === z.STATUS ? 'selected' : ''}>${s.NAZWA}</option>`
+            ).join('');
+            akcjaCell = `<td>
+                <select id="st_${z.ID}" style="width:140px;padding:4px;border:1px solid #d1d5db;border-radius:6px">
+                    ${opts}
+                </select>
+                <button class="btn" style="margin-top:4px" onclick="zmienStatus(${z.ID})">Zapisz</button>
+            </td>`;
+        } else if (isAdmin) {
+            akcjaCell = `<td>
+                <button class="action-btn delete-btn" onclick="deleteZamowienie(${z.ID})" style="padding: 7px 10px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; background: #fee2e2; color: #991b1b;">Usuń</button>
+            </td>`;
+        }
+
+        html += `<tr>
+            <td>${z.ID}</td>
+            ${rola === 'distributor' ? `<td>${z.DEALER}</td>` : ''}
+            <td>${z.NAZWA}</td>
+            <td><b>${z.ILOSC} szt.</b></td>
+            <td>${dataStr}</td>
+            <td>${statusCell}</td>
+            ${akcjaCell}
+        </tr>`;
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+async function deleteZamowienie(id) {
+    if (!confirm('Na pewno usuńć to zamówienie?')) return;
+    const res = await fetch(`http://localhost:3000/api/zamowienia/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+        loadZamowienia('adminOrdersContainer');
+    } else {
+        const data = await res.json();
+        alert(data.error || 'Błąd usuwania zamówienia.');
+    }
+}
+
+async function loadUsers() {
+    const container = document.getElementById('adminUsersContainer');
+    container.innerHTML = '<p style="color:#6b7280; text-align:center;">Ładowanie użytkowników...</p>';
+
+    try {
+        const res = await fetch('http://localhost:3000/api/admin/users');
+        const users = await res.json();
+        if (!Array.isArray(users) || users.length === 0) {
+            container.innerHTML = '<p style="color:#6b7280; text-align:center;">Brak użytkowników w bazie.</p>';
+            return;
+        }
+
+        let html = `<table><thead><tr>
+            <th>ID</th><th>Login</th><th>Rola</th><th>Dealer</th><th>Nowe hasło</th><th>Akcje</th>
+        </tr></thead><tbody>`;
+
+        users.forEach(u => {
+            const isAdminAccount = u.LOGIN.toLowerCase() === 'admin';
+            const deleteButtonDisabled = isAdminAccount ? 'disabled style="opacity:0.4; cursor: not-allowed;"' : '';
+            html += `<tr>
+                <td>${u.ID}</td>
+                <td>${u.LOGIN}</td>
+                <td>${u.ROLA}</td>
+                <td>${u.DEALER_NAZWA || '—'}</td>
+                <td><input id="pwd_${u.ID}" type="password" placeholder="Nowe hasło"></td>
+                <td class="user-action">
+                    <button class="action-btn save-btn" onclick="updateUserPassword(${u.ID})">Zmień hasło</button>
+                    <button class="action-btn delete-btn" onclick="deleteUser(${u.ID}, '${u.LOGIN}')" ${deleteButtonDisabled}>Usuń</button>
+                </td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    } catch (err) {
+        container.innerHTML = '<p style="color:#991b1b; text-align:center;">Błąd ładowania użytkowników.</p>';
+    }
+}
+
+async function deleteUser(id, login) {
+    if (login.toLowerCase() === 'admin') {
+        document.getElementById('adminMessage').style.color = '#b91c1c';
+        document.getElementById('adminMessage').textContent = 'Nie można usunąć konta administratora.';
+        return;
+    }
+    if (!confirm('Na pewno usunąć to konto?')) return;
+    const res = await fetch(`http://localhost:3000/api/admin/users/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+        loadUsers();
+        document.getElementById('adminMessage').style.color = '#0f766e';
+        document.getElementById('adminMessage').textContent = 'Konto zostało usunięte.';
+    } else {
+        const data = await res.json();
+        document.getElementById('adminMessage').style.color = '#b91c1c';
+        document.getElementById('adminMessage').textContent = data.error || 'Błąd usuwania konta.';
+    }
+}
+
+async function updateUserPassword(id) {
+    const password = document.getElementById(`pwd_${id}`).value.trim();
+    if (!password) {
+        document.getElementById('adminMessage').style.color = '#b91c1c';
+        document.getElementById('adminMessage').textContent = 'Podaj nowe hasło dla użytkownika.';
+        return;
+    }
+
+    const res = await fetch(`http://localhost:3000/api/admin/users/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password })
+    });
+    if (res.ok) {
+        loadUsers();
+        document.getElementById('adminMessage').style.color = '#0f766e';
+        document.getElementById('adminMessage').textContent = 'Hasło zostało zaktualizowane.';
+    } else {
+        const data = await res.json();
+        document.getElementById('adminMessage').style.color = '#b91c1c';
+        document.getElementById('adminMessage').textContent = data.error || 'Błąd zmiany hasła.';
+    }
+}
+
+async function zmienStatus(zamId) {
+    const nowyStatus = document.getElementById('st_' + zamId).value;
+    const res = await fetch(`http://localhost:3000/api/zamowienia/${zamId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nowyStatus })
+    });
+    if (res.ok) {
+        loadZamowienia();
+    } else {
+        const data = await res.json();
+        alert(data.error || 'Błąd zmiany statusu.');
+    }
+}
+
+load();
+</script>
+</body>
+</html>
